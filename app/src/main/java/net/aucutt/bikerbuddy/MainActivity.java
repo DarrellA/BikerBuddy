@@ -9,6 +9,8 @@ import net.aucutt.bikerbuddy.network.Controller;
 import net.aucutt.bikerbuddy.network.Result;
 import net.aucutt.bikerbuddy.util.DateTimeUtil;
 
+import java.util.concurrent.TimeUnit;
+
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -39,21 +41,36 @@ public class MainActivity extends Activity  {
     public  final static String TAG = "Darrell";
 
     private TextView sunset;
-    private  Observable<Result> observable;
+    private TextView currentTime;
+    private Observable<Result> observable;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         sunset = findViewById(R.id.sunsetText);
+        currentTime = findViewById(R.id.currentTime);
+        currentTime.setText(DateTimeUtil.getCurrentTimeFormatted());
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         updateSunset();
+
+
+        Observable.interval(30, TimeUnit.SECONDS)
+                .timeInterval()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe( what->displayTime(what));
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
 
     private void updateSunset() {
         Controller controller = new Controller();
@@ -76,4 +93,12 @@ public class MainActivity extends Activity  {
         sunset.setText(t.getLocalizedMessage());
         observable.unsubscribeOn(Schedulers.io());
     }
+
+    private void displayTime(io.reactivex.schedulers.Timed timed) {
+        currentTime.setText(DateTimeUtil.getCurrentTimeFormatted());
+    }
+
+
+
+
 }
