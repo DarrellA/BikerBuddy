@@ -15,7 +15,7 @@ public class DateTimeUtil {
         stupidFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
         try {
             Date date = stupidFormat.parse(utc);
-            DateFormat myFormat =new SimpleDateFormat("hh:mm:ss");
+            DateFormat myFormat =new SimpleDateFormat("hh:mm");
             return myFormat.format(date);
 
         } catch (ParseException e) {

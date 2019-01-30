@@ -2,9 +2,16 @@ package net.aucutt.bikerbuddy;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 
 import net.aucutt.bikerbuddy.network.Controller;
+import net.aucutt.bikerbuddy.network.Result;
+import net.aucutt.bikerbuddy.util.DateTimeUtil;
+
+import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 
 /**
  * Skeleton of an Android Things activity.
@@ -27,9 +34,12 @@ import net.aucutt.bikerbuddy.network.Controller;
  *
  * https://api.sunrise-sunset.org/json?lat=47.581009&lng=-122.335738&date=today
  */
-public class MainActivity extends Activity implements CallbackInterface {
+public class MainActivity extends Activity  {
+
+    public  final static String TAG = "Darrell";
 
     private TextView sunset;
+    private  Observable<Result> observable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,12 +51,29 @@ public class MainActivity extends Activity implements CallbackInterface {
     @Override
     protected void onResume() {
         super.onResume();
-        Controller controller = new Controller(this);
-        controller.start();
+        updateSunset();
     }
 
-    @Override
-    public void onResult(String sunsetTime) {
-        sunset.setText(getString(R.string.sunset) + sunsetTime);
+
+    private void updateSunset() {
+        Controller controller = new Controller();
+        observable= controller.start();
+        observable.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnError(throwable->onError(throwable))
+                .subscribe(result->parseResponse(result));
+    }
+
+    private void parseResponse(Result response) {
+        String sunSet = response.getResults().getSunset();
+        String output = DateTimeUtil.UITToPST(sunSet);
+        Log.d(TAG, sunSet + "  " + output);
+        sunset.setText(getString(R.string.sunset) + output);
+        observable.unsubscribeOn(Schedulers.io());
+    }
+
+    private void onError(Throwable t) {
+        sunset.setText(t.getLocalizedMessage());
+        observable.unsubscribeOn(Schedulers.io());
     }
 }

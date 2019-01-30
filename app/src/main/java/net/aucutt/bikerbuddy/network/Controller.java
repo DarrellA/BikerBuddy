@@ -4,28 +4,30 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
-import net.aucutt.bikerbuddy.CallbackInterface;
-import net.aucutt.bikerbuddy.util.DateTimeUtil;
+import net.aucutt.bikerbuddy.MainActivity;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import io.reactivex.Observable;
+import io.reactivex.Observer;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class Controller implements Callback<Result> {
+public class Controller extends Observable<Result> {
 
     static final private String BASE_URL = "https://api.sunrise-sunset.org";
-    private final static String TAG = "Darrell";
-    private CallbackInterface callback;
 
-    public Controller(CallbackInterface callback) {
+
+    public Controller() {
         super();
-        this.callback = callback;
     }
 
-    public void start () {
+    @Override
+    protected void subscribeActual(Observer<? super Result> observer) {
+        Log.d(MainActivity.TAG, "Who called me?");
+    }
+
+    public Observable<Result>  start () {
         Gson gson = new GsonBuilder()
                 .setLenient()
                 .create();
@@ -33,36 +35,14 @@ public class Controller implements Callback<Result> {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create(gson))
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build();
 
         SunriseSunsetAPI sunAPI = retrofit.create(SunriseSunsetAPI.class);
 
-        Call<Result> call = sunAPI.loadSunriseSunset();
-        call.enqueue(this);
+        return sunAPI.loadSunriseSunset();
     }
 
 
-    @Override
-    public void onResponse(Call<Result> call, Response<Result> response) {
-        String output;
-        if (response.isSuccessful()) {
-            String sunSet =  response.body().getResults().getSunset();
-            output =  DateTimeUtil.UITToPST(sunSet);
-            Log.d(TAG, sunSet +  "  "  + output);
 
-        } else {
-            Log.e(TAG, String.valueOf(response.errorBody()));
-            output = String.valueOf(response.errorBody());
-        }
-        callback.onResult(output);
-
-
-    }
-
-    @Override
-    public void onFailure(Call<Result> call, Throwable t) {
-        Log.e(TAG, "whoops " + t);
-       t.printStackTrace();
-        callback.onResult(t.getMessage());
-    }
 }
