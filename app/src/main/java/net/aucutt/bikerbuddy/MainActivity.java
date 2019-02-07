@@ -3,6 +3,8 @@ package net.aucutt.bikerbuddy;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import net.aucutt.bikerbuddy.network.Controller;
@@ -42,6 +44,7 @@ public class MainActivity extends Activity  {
 
     private TextView sunset;
     private TextView currentTime;
+    private Button updateButton;
     private Observable<Result> observable;
 
 
@@ -51,6 +54,7 @@ public class MainActivity extends Activity  {
         setContentView(R.layout.activity_main);
         sunset = findViewById(R.id.sunsetText);
         currentTime = findViewById(R.id.currentTime);
+        updateButton = findViewById(R.id.updateButton);
         currentTime.setText(DateTimeUtil.getCurrentTimeFormatted());
 
     }
@@ -67,9 +71,8 @@ public class MainActivity extends Activity  {
                 .subscribe( what->displayTime(what));
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
+    public void attemptToUpdate(View view) {
+        updateSunset();
     }
 
     private void updateSunset() {
@@ -87,18 +90,20 @@ public class MainActivity extends Activity  {
         Log.d(TAG, sunSet + "  " + output);
         sunset.setText(getString(R.string.sunset) + output);
         observable.unsubscribeOn(Schedulers.io());
+        Log.d(TAG,DateTimeUtil.getCurrentDateFormatted() );
+        updateButton.setText( DateTimeUtil.getCurrentDateFormatted());
     }
 
     private void onError(Throwable t) {
-        sunset.setText(t.getLocalizedMessage());
+       Log.d(TAG, t.getLocalizedMessage());
         observable.unsubscribeOn(Schedulers.io());
+        updateButton.setText( t.getLocalizedMessage());
     }
 
     private void displayTime(io.reactivex.schedulers.Timed timed) {
         currentTime.setText(DateTimeUtil.getCurrentTimeFormatted());
+
     }
-
-
 
 
 }

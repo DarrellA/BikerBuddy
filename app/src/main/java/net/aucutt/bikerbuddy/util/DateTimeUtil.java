@@ -10,6 +10,7 @@ import java.util.TimeZone;
 public class DateTimeUtil {
 
     private static final DateFormat myFormat =new SimpleDateFormat("h:mm");
+    private static final DateFormat dateFormat =new SimpleDateFormat("MMM dd");
 
     public static String UITToPST(String utc) {
         //2019-01-31T01:07:58+00:00
@@ -28,5 +29,9 @@ public class DateTimeUtil {
     public static  String getCurrentTimeFormatted() {
         Date myDate =  new Date(System.currentTimeMillis());
         return myFormat.format(myDate);
+    }
+
+    public static String getCurrentDateFormatted() {
+        return dateFormat.format( new Date(System.currentTimeMillis()));
     }
 }
