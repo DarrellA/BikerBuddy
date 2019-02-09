@@ -7,15 +7,21 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import net.aucutt.bikerbuddy.network.Controller;
-import net.aucutt.bikerbuddy.network.Result;
-import net.aucutt.bikerbuddy.util.DateTimeUtil;
+import net.aucutt.bikerbuddy.sunrisenetwork.Controller;
+import net.aucutt.bikerbuddy.sunrisenetwork.Result;
+import net.aucutt.bikerbuddy.util.DateTimeAndTempUtil;
+import net.aucutt.bikerbuddy.weathernetwork.ForecastData;
+import net.aucutt.bikerbuddy.weathernetwork.List;
+import net.aucutt.bikerbuddy.weathernetwork.WeatherController;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
-import io.reactivex.schedulers.Schedulers;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * Skeleton of an Android Things activity.
@@ -41,11 +47,12 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 public class MainActivity extends Activity  {
 
     public  final static String TAG = "Darrell";
-
+    public enum CommuteTimes  {Evening,TomorrowMorning,TomorrowEvening};
     private TextView sunset;
     private TextView currentTime;
     private Button updateButton;
     private Observable<Result> observable;
+    private Observable<ForecastData> weatherObservable;
 
 
     @Override
@@ -55,7 +62,7 @@ public class MainActivity extends Activity  {
         sunset = findViewById(R.id.sunsetText);
         currentTime = findViewById(R.id.currentTime);
         updateButton = findViewById(R.id.updateButton);
-        currentTime.setText(DateTimeUtil.getCurrentTimeFormatted());
+        currentTime.setText(DateTimeAndTempUtil.getCurrentTimeFormatted());
 
     }
 
@@ -63,7 +70,7 @@ public class MainActivity extends Activity  {
     protected void onResume() {
         super.onResume();
         updateSunset();
-
+        updateForecast();
 
         Observable.interval(30, TimeUnit.SECONDS)
                 .timeInterval()
@@ -86,24 +93,56 @@ public class MainActivity extends Activity  {
 
     private void parseResponse(Result response) {
         String sunSet = response.getResults().getSunset();
-        String output = DateTimeUtil.UITToPST(sunSet);
+        String output = DateTimeAndTempUtil.UITToPST(sunSet);
         Log.d(TAG, sunSet + "  " + output);
         sunset.setText(getString(R.string.sunset) + output);
         observable.unsubscribeOn(Schedulers.io());
-        Log.d(TAG,DateTimeUtil.getCurrentDateFormatted() );
-        updateButton.setText( DateTimeUtil.getCurrentDateFormatted());
+        Log.d(TAG,DateTimeAndTempUtil.getCurrentDateFormatted() );
+        updateButton.setText( DateTimeAndTempUtil.getCurrentDateFormatted());
     }
 
     private void onError(Throwable t) {
-       Log.d(TAG, t.getLocalizedMessage());
+       Log.e(TAG, "you got errors, son : " +  t.getLocalizedMessage());
         observable.unsubscribeOn(Schedulers.io());
         updateButton.setText( t.getLocalizedMessage());
     }
 
     private void displayTime(io.reactivex.schedulers.Timed timed) {
-        currentTime.setText(DateTimeUtil.getCurrentTimeFormatted());
+        currentTime.setText(DateTimeAndTempUtil.getCurrentTimeFormatted());
 
     }
 
+    private void updateForecast() {
+        WeatherController controller = new WeatherController();
+        weatherObservable = controller.start();
+        weatherObservable.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnError(throwable->onError(throwable))
+                .subscribe(result->parseForecastResponse(result));
+    }
+
+    private void parseForecastResponse(ForecastData forecastData) {
+
+        Log.d(TAG, forecastData.getCity().getName() + " " + forecastData.getList().size() + "  " + System.currentTimeMillis() / 1000 + "   " + System.currentTimeMillis() + " " + DateTimeAndTempUtil.getSecondsPastEpochFormatted((int) (System.currentTimeMillis() / 1000)));
+        HashMap<CommuteTimes, List> desiredList =   new HashMap<>();
+        Iterator<List> iterator = forecastData.getList().iterator();
+         do {
+            List dataList = iterator.next();
+            switch (DateTimeAndTempUtil.getHourPastEpoch(dataList.getDt())) {
+
+                    case "16":
+                        if (!desiredList.containsKey(CommuteTimes.Evening)) {
+                            desiredList.put(CommuteTimes.Evening, dataList);
+                        } else {
+                            desiredList.put(CommuteTimes.TomorrowEvening, dataList);
+                        }
+                        break;
+                    case "07":
+                        desiredList.put(CommuteTimes.TomorrowMorning, dataList);
+
+                }
+        } while(!desiredList.containsKey(CommuteTimes.TomorrowEvening) && iterator.hasNext());
+
+    }
 
 }

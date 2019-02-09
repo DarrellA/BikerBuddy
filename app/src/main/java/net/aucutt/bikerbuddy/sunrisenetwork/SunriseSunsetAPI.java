@@ -1,7 +1,6 @@
-package net.aucutt.bikerbuddy.network;
+package net.aucutt.bikerbuddy.sunrisenetwork;
 
 import io.reactivex.Observable;
-import retrofit2.Call;
 import retrofit2.http.GET;
 
 public interface SunriseSunsetAPI {

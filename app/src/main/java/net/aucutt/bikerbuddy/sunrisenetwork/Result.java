@@ -1,4 +1,4 @@
-package net.aucutt.bikerbuddy.network;
+package net.aucutt.bikerbuddy.sunrisenetwork;
 
 public class Result {
 
