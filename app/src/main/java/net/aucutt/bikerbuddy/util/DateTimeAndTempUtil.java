@@ -3,6 +3,7 @@ package net.aucutt.bikerbuddy.util;
 import android.util.Pair;
 
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -16,6 +17,7 @@ public class DateTimeAndTempUtil {
     private static final DateFormat dateFormat =new SimpleDateFormat("MMM dd", Locale.US);
     private static final DateFormat dateTimeFormat =new SimpleDateFormat("MMM dd yyyy  HH:mm", Locale.US);
     private static final DateFormat hourFormat = new SimpleDateFormat("HH", Locale.US);
+    private static final DecimalFormat farnheitFormat = new DecimalFormat( "###");
 
     public static String UITToPST(String utc) {
         //2019-01-31T01:07:58+00:00
@@ -42,7 +44,8 @@ public class DateTimeAndTempUtil {
 
     public static Double kelvinToFarenheit(Double kelvin) {
          double what = kelvin * 9;
-         return what /5 - 459.67;
+        double is =  what /5 - 459.67;
+        return new Double( farnheitFormat.format(is)).doubleValue();
     }
 
     public static String getSecondsPastEpochFormatted(int seconds) {

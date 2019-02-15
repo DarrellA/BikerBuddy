@@ -14,7 +14,6 @@ import net.aucutt.bikerbuddy.weathernetwork.ForecastData;
 import net.aucutt.bikerbuddy.weathernetwork.List;
 import net.aucutt.bikerbuddy.weathernetwork.WeatherController;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
@@ -47,7 +46,7 @@ import io.reactivex.schedulers.Schedulers;
 public class MainActivity extends Activity  {
 
     public  final static String TAG = "Darrell";
-    public enum CommuteTimes  {Evening,TomorrowMorning,TomorrowEvening};
+    public enum CommuteTimes  {Evening, NextMorning, NextEvening, Morning};
     private TextView sunset;
     private TextView currentTime;
     private Button updateButton;
@@ -121,27 +120,40 @@ public class MainActivity extends Activity  {
                 .subscribe(result->parseForecastResponse(result));
     }
 
-    private void parseForecastResponse(ForecastData forecastData) {
+    private  HashMap<CommuteTimes, List>  parseForecastResponse(ForecastData forecastData) {
 
         Log.d(TAG, forecastData.getCity().getName() + " " + forecastData.getList().size() + "  " + System.currentTimeMillis() / 1000 + "   " + System.currentTimeMillis() + " " + DateTimeAndTempUtil.getSecondsPastEpochFormatted((int) (System.currentTimeMillis() / 1000)));
         HashMap<CommuteTimes, List> desiredList =   new HashMap<>();
         Iterator<List> iterator = forecastData.getList().iterator();
-         do {
+        do {
             List dataList = iterator.next();
             switch (DateTimeAndTempUtil.getHourPastEpoch(dataList.getDt())) {
 
-                    case "16":
-                        if (!desiredList.containsKey(CommuteTimes.Evening)) {
-                            desiredList.put(CommuteTimes.Evening, dataList);
-                        } else {
-                            desiredList.put(CommuteTimes.TomorrowEvening, dataList);
-                        }
-                        break;
-                    case "07":
-                        desiredList.put(CommuteTimes.TomorrowMorning, dataList);
 
-                }
-        } while(!desiredList.containsKey(CommuteTimes.TomorrowEvening) && iterator.hasNext());
+                case "16":
+                    if (!desiredList.containsKey(CommuteTimes.Evening)) {
+                        desiredList.put(CommuteTimes.Evening, dataList);
+                    } else {
+                        desiredList.put(CommuteTimes.NextEvening, dataList);
+                    }
+                    break;
+                case "07":
+                    if (!desiredList.containsKey(CommuteTimes.Morning)) {
+                        desiredList.put(CommuteTimes.Morning, dataList);
+                    } else {
+                        desiredList.put(CommuteTimes.NextMorning, dataList);
+                    }
+
+            }
+        } while (iterator.hasNext());
+        for ( CommuteTimes commute : CommuteTimes.values() ) {
+            List check = desiredList.get(commute);
+
+             Log.d(TAG, commute.name() + "  "  +  DateTimeAndTempUtil.kelvinToFarenheit(check.getMain().getTemp()) +  " "   +  check.getWeather().get(0).getMain()   +  "  "  + DateTimeAndTempUtil.getSecondsPastEpochFormatted(check.getDt()));
+
+        }
+
+        return desiredList;
 
     }
 
