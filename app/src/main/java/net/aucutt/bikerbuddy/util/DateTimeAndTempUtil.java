@@ -17,7 +17,7 @@ public class DateTimeAndTempUtil {
     private static final DateFormat dateFormat =new SimpleDateFormat("MMM dd", Locale.US);
     private static final DateFormat dateTimeFormat =new SimpleDateFormat("MMM dd yyyy  HH:mm", Locale.US);
     private static final DateFormat hourFormat = new SimpleDateFormat("HH", Locale.US);
-    private static final DecimalFormat farnheitFormat = new DecimalFormat( "###");
+    private static final DecimalFormat farnheitFormat = new DecimalFormat( "##");
 
     public static String UITToPST(String utc) {
         //2019-01-31T01:07:58+00:00
@@ -52,6 +52,13 @@ public class DateTimeAndTempUtil {
         Long theDate = seconds * 1000l;
         Date myDate =  new Date(theDate);
         return dateTimeFormat.format(myDate);
+
+    }
+
+    public static String getHoursPastEpochFormatted(int seconds) {
+        Long theDate = seconds * 1000l;
+        Date myDate =  new Date(theDate);
+        return timeFormat.format(myDate);
 
     }
 

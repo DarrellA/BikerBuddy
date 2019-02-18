@@ -180,15 +180,19 @@ public class MainActivity extends Activity  {
             Log.d(TAG, DateTimeAndTempUtil.kelvinToFarenheit(check.getMain().getTemp()) + " " + check.getWeather().get(0).getMain() + "  " + DateTimeAndTempUtil.getSecondsPastEpochFormatted(check.getDt()));
 
         }
-        ImageView forecast = findViewById(R.id.forecast);
-        forecast.setBackground( getDrawable(TextWeatherToImageUtil.getDrawableId(order.get(0).getWeather().get(0).getMain())));
-        ImageView forecast1 = findViewById(R.id.forecast1);
-        forecast1.setBackground( getDrawable(TextWeatherToImageUtil.getDrawableId(order.get(1).getWeather().get(0).getMain())));
-
-        ImageView forecast2 = findViewById(R.id.forecast2);
-        forecast2.setBackground( getDrawable(TextWeatherToImageUtil.getDrawableId(order.get(2).getWeather().get(0).getMain())));
+        //forecast.setBackground( getDrawable(TextWeatherToImageUtil.getDrawableId(order.get(0).getWeather().get(0).getMain())));
+        updateWidget(order.get(0),  findViewById(R.id.forecast), findViewById(R.id.forecastText));
+        updateWidget(order.get(1),  findViewById(R.id.forecast1), findViewById(R.id.forecastText1));
+        updateWidget(order.get(2),  findViewById(R.id.forecast2), findViewById(R.id.forecastText2));
 
 
+    }
+
+    private void updateWidget( List data, ImageView forecastImage, TextView forecastText ) {
+        Log.d(TAG, TextWeatherToImageUtil.getDrawableId(data.getWeather().get(0).getMain())  +  "  "  +  DateTimeAndTempUtil.kelvinToFarenheit(data.getMain().getTemp()).toString()  +  "  " +  DateTimeAndTempUtil.UITToPST(data.getDtTxt()) );
+        forecastImage.setBackground( getDrawable(TextWeatherToImageUtil.getDrawableId(data.getWeather().get(0).getMain())));
+        forecastText.setText( DateTimeAndTempUtil.kelvinToFarenheit(data.getMain().getTemp()).toString()   + "\n " +  data.getWeather().get(0).getMain() +
+                "\n"  +  DateTimeAndTempUtil.getHoursPastEpochFormatted(data.getDt()));
     }
 
 }
