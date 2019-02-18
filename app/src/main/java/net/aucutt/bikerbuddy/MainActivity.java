@@ -5,17 +5,22 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import net.aucutt.bikerbuddy.sunrisenetwork.Controller;
 import net.aucutt.bikerbuddy.sunrisenetwork.Result;
 import net.aucutt.bikerbuddy.util.DateTimeAndTempUtil;
+import net.aucutt.bikerbuddy.util.TextWeatherToImageUtil;
 import net.aucutt.bikerbuddy.weathernetwork.ForecastData;
 import net.aucutt.bikerbuddy.weathernetwork.List;
 import net.aucutt.bikerbuddy.weathernetwork.WeatherController;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
@@ -120,7 +125,7 @@ public class MainActivity extends Activity  {
                 .subscribe(result->parseForecastResponse(result));
     }
 
-    private  HashMap<CommuteTimes, List>  parseForecastResponse(ForecastData forecastData) {
+    private  void parseForecastResponse(ForecastData forecastData) {
 
         Log.d(TAG, forecastData.getCity().getName() + " " + forecastData.getList().size() + "  " + System.currentTimeMillis() / 1000 + "   " + System.currentTimeMillis() + " " + DateTimeAndTempUtil.getSecondsPastEpochFormatted((int) (System.currentTimeMillis() / 1000)));
         HashMap<CommuteTimes, List> desiredList =   new HashMap<>();
@@ -133,27 +138,56 @@ public class MainActivity extends Activity  {
                 case "16":
                     if (!desiredList.containsKey(CommuteTimes.Evening)) {
                         desiredList.put(CommuteTimes.Evening, dataList);
-                    } else {
+                    } else  if (!desiredList.containsKey(CommuteTimes.NextEvening)) {
                         desiredList.put(CommuteTimes.NextEvening, dataList);
                     }
                     break;
                 case "07":
                     if (!desiredList.containsKey(CommuteTimes.Morning)) {
                         desiredList.put(CommuteTimes.Morning, dataList);
-                    } else {
+                    } else if (!desiredList.containsKey(CommuteTimes.NextMorning)) {
                         desiredList.put(CommuteTimes.NextMorning, dataList);
                     }
 
             }
         } while (iterator.hasNext());
+
         for ( CommuteTimes commute : CommuteTimes.values() ) {
             List check = desiredList.get(commute);
+            Log.d(TAG, commute.name() + "  " + DateTimeAndTempUtil.kelvinToFarenheit(check.getMain().getTemp()) + " " + check.getWeather().get(0).getMain() + "  " + DateTimeAndTempUtil.getSecondsPastEpochFormatted(check.getDt()));
+        }
+        updateWeather(desiredList);
 
-             Log.d(TAG, commute.name() + "  "  +  DateTimeAndTempUtil.kelvinToFarenheit(check.getMain().getTemp()) +  " "   +  check.getWeather().get(0).getMain()   +  "  "  + DateTimeAndTempUtil.getSecondsPastEpochFormatted(check.getDt()));
+    }
+
+    private void updateWeather( HashMap<CommuteTimes, List> data) {
+        //have are data, the only thing we don't know is we display evening first or morning.
+        ArrayList<List> order =  new ArrayList<>(3);
+
+        if ( data.get(CommuteTimes.Evening).getDt() <  data.get(CommuteTimes.Morning).getDt()) {
+            //first is evening
+            order.add(data.get(CommuteTimes.Evening));
+            order.add(data.get(CommuteTimes.Morning));
+            order.add(data.get(CommuteTimes.NextEvening));
+
+        } else {
+            order.add(data.get(CommuteTimes.Morning));
+            order.add(data.get(CommuteTimes.Evening));
+            order.add(data.get(CommuteTimes.NextMorning));
 
         }
+        for ( List check : order) {
+            Log.d(TAG, DateTimeAndTempUtil.kelvinToFarenheit(check.getMain().getTemp()) + " " + check.getWeather().get(0).getMain() + "  " + DateTimeAndTempUtil.getSecondsPastEpochFormatted(check.getDt()));
 
-        return desiredList;
+        }
+        ImageView forecast = findViewById(R.id.forecast);
+        forecast.setBackground( getDrawable(TextWeatherToImageUtil.getDrawableId(order.get(0).getWeather().get(0).getMain())));
+        ImageView forecast1 = findViewById(R.id.forecast1);
+        forecast1.setBackground( getDrawable(TextWeatherToImageUtil.getDrawableId(order.get(1).getWeather().get(0).getMain())));
+
+        ImageView forecast2 = findViewById(R.id.forecast2);
+        forecast2.setBackground( getDrawable(TextWeatherToImageUtil.getDrawableId(order.get(2).getWeather().get(0).getMain())));
+
 
     }
 

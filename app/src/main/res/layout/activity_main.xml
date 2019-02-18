@@ -42,28 +42,48 @@
         android:orientation="vertical"
         app:layout_constraintGuide_begin="20dp"/>
 
-    <!--<LinearLayout-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:orientation="horizontal">-->
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="120dp"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="8dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <!--<ImageView-->
-    <!--android:="+@id/tonight"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"/>-->
+        <ImageView
+            android:id="@+id/forecast"
+            android:layout_width="124dp"
+            android:layout_height="124dp"
+            android:layout_marginEnd="2dp"
+            android:background="@mipmap/ic_snow"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
 
 
-    <!--<ImageView-->
-    <!--android:="+@id/tomorrowMorning"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"/>-->
+        <ImageView
+            android:id="@+id/forecast1"
+            android:layout_width="124dp"
+            android:layout_height="124dp"
+            android:layout_marginEnd="2dp"
+            android:background="@mipmap/ic_cloudy"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
 
-    <!--<ImageView-->
-    <!--android:="+@id/tomorrowNight"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"/>-->
+        <ImageView
+            android:id="@+id/forecast2"
+            android:layout_width="124dp"
+            android:layout_height="124dp"
+            android:background="@mipmap/ic_sunnny"
+            android:layout_marginEnd="2dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
 
-    <!--</LinearLayout>-->
+    </android.support.constraint.ConstraintLayout>
 
     <Button
         android:id="@+id/updateButton"
