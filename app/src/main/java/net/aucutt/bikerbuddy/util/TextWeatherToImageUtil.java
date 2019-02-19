@@ -17,6 +17,12 @@ public class TextWeatherToImageUtil {
             case "Clouds":
                 drawable = R.mipmap.ic_cloudy;
                 break;
+            case "Clear":
+                drawable = R.mipmap.ic_clear;
+                break;
+            case "Snow":
+                drawable = R.mipmap.ic_snow;
+                break;
             default:
                 Log.e(TAG, "no mapping for " + text);
                 drawable = R.mipmap.ic_rain;

@@ -18,9 +18,7 @@ import net.aucutt.bikerbuddy.weathernetwork.WeatherController;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
@@ -189,9 +187,9 @@ public class MainActivity extends Activity  {
     }
 
     private void updateWidget( List data, ImageView forecastImage, TextView forecastText ) {
-        Log.d(TAG, TextWeatherToImageUtil.getDrawableId(data.getWeather().get(0).getMain())  +  "  "  +  DateTimeAndTempUtil.kelvinToFarenheit(data.getMain().getTemp()).toString()  +  "  " +  DateTimeAndTempUtil.UITToPST(data.getDtTxt()) );
+        Log.d(TAG, TextWeatherToImageUtil.getDrawableId(data.getWeather().get(0).getMain())  +  "  "  +  DateTimeAndTempUtil.kelvinToFarenheit(data.getMain().getTemp()).toString()  +  "  " +  DateTimeAndTempUtil.getHoursPastEpochFormatted(data.getDt()) );
         forecastImage.setBackground( getDrawable(TextWeatherToImageUtil.getDrawableId(data.getWeather().get(0).getMain())));
-        forecastText.setText( DateTimeAndTempUtil.kelvinToFarenheit(data.getMain().getTemp()).toString()   + "\n " +  data.getWeather().get(0).getMain() +
+        forecastText.setText( DateTimeAndTempUtil.kelvinToFarenheit(data.getMain().getTemp()).toString()   + "\n" +  data.getWeather().get(0).getMain() +
                 "\n"  +  DateTimeAndTempUtil.getHoursPastEpochFormatted(data.getDt()));
     }
 
