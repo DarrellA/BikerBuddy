@@ -1,13 +1,18 @@
 package net.aucutt.bikerbuddy;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
+import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import net.aucutt.bikerbuddy.background.Backgrounder;
 import net.aucutt.bikerbuddy.sunrisenetwork.Controller;
 import net.aucutt.bikerbuddy.sunrisenetwork.Result;
 import net.aucutt.bikerbuddy.util.DateTimeAndTempUtil;
@@ -55,6 +60,11 @@ public class MainActivity extends Activity  {
     private Button updateButton;
     private Observable<Result> observable;
     private Observable<ForecastData> weatherObservable;
+    private Backgrounder backgrounder;
+    private ConstraintLayout layout;
+    private TextView forecast;
+    private TextView forecast1;
+    private TextView forecast2;
 
 
     @Override
@@ -64,7 +74,13 @@ public class MainActivity extends Activity  {
         sunset = findViewById(R.id.sunsetText);
         currentTime = findViewById(R.id.currentTime);
         updateButton = findViewById(R.id.updateButton);
+        layout = findViewById(R.id.layout);
+        forecast = findViewById(R.id.forecastText);
+        forecast1 = findViewById(R.id.forecastText1);
+        forecast2 = findViewById(R.id.forecastText2);
         currentTime.setText(DateTimeAndTempUtil.getCurrentTimeFormatted());
+        backgrounder = new Backgrounder();
+        backgrounder.loadImagesFromFile();
 
     }
 
@@ -73,15 +89,34 @@ public class MainActivity extends Activity  {
         super.onResume();
         updateSunset();
         updateForecast();
-
+        updateBackground();
         Observable.interval(30, TimeUnit.SECONDS)
                 .timeInterval()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe( what->displayTime(what));
+        Observable.interval(60, TimeUnit.MINUTES)
+                .timeInterval()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe( what->updateBackground(what));
+
+
     }
 
     public void attemptToUpdate(View view) {
         updateSunset();
+    }
+
+    private void updateBackground() {
+        Bitmap bitmap = backgrounder.fetchNewBackground();
+        if (bitmap != null) {
+            layout.setBackground(new BitmapDrawable(getResources(), bitmap));
+            int dominantColor = backgrounder.getPalete().getDominantColor(getResources().getColor(R.color.colorPrimary, null));
+            int contrastColor = backgrounder.getContrastColor(dominantColor);
+            sunset.setTextColor(contrastColor);
+            currentTime.setTextColor(contrastColor);
+            updateWidgetTextColor(contrastColor);
+            // Log.d(TAG, "palette "  + palette.)
+        }
     }
 
     private void updateSunset() {
@@ -111,7 +146,10 @@ public class MainActivity extends Activity  {
 
     private void displayTime(io.reactivex.schedulers.Timed timed) {
         currentTime.setText(DateTimeAndTempUtil.getCurrentTimeFormatted());
+    }
 
+    private void updateBackground(io.reactivex.schedulers.Timed timed) {
+       updateBackground();
     }
 
     private void updateForecast() {
@@ -184,18 +222,24 @@ public class MainActivity extends Activity  {
 
         }
         //forecast.setBackground( getDrawable(TextWeatherToImageUtil.getDrawableId(order.get(0).getWeather().get(0).getMain())));
-        updateWidget(order.get(0),  findViewById(R.id.forecast), findViewById(R.id.forecastText));
-        updateWidget(order.get(1),  findViewById(R.id.forecast1), findViewById(R.id.forecastText1));
-        updateWidget(order.get(2),  findViewById(R.id.forecast2), findViewById(R.id.forecastText2));
+        updateWidget(order.get(0),  findViewById(R.id.forecast), forecast);
+        updateWidget(order.get(1),  findViewById(R.id.forecast1), forecast1);
+        updateWidget(order.get(2),  findViewById(R.id.forecast2), forecast2);
 
 
     }
 
-    private void updateWidget( List data, ImageView forecastImage, TextView forecastText ) {
+    private void updateWidget(List data, ImageView forecastImage, TextView forecastText ) {
         Log.d(TAG, TextWeatherToImageUtil.getDrawableId(data.getWeather().get(0).getMain())  +  "  "  +  DateTimeAndTempUtil.kelvinToFarenheit(data.getMain().getTemp()).toString()  +  "  " +  DateTimeAndTempUtil.getHoursPastEpochFormatted(data.getDt()) );
         forecastImage.setBackground( getDrawable(TextWeatherToImageUtil.getDrawableId(data.getWeather().get(0).getMain())));
         forecastText.setText( DateTimeAndTempUtil.kelvinToFarenheit(data.getMain().getTemp()).toString()   + "\n" +  data.getWeather().get(0).getMain() +
                 "\n"  +  DateTimeAndTempUtil.getHoursPastEpochFormatted(data.getDt()));
+    }
+
+    private void updateWidgetTextColor(int newColor) {
+        forecast.setTextColor(newColor);
+        forecast1.setTextColor(newColor);
+        forecast2.setTextColor(newColor);
     }
 
 }
