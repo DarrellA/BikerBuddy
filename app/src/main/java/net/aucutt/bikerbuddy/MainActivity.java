@@ -133,13 +133,15 @@ public class MainActivity extends Activity  {
             switch (DateTimeAndTempUtil.getHourPastEpoch(dataList.getDt())) {
 
 
+                case "17":
                 case "16":
                     if (!desiredList.containsKey(CommuteTimes.Evening)) {
                         desiredList.put(CommuteTimes.Evening, dataList);
-                    } else  if (!desiredList.containsKey(CommuteTimes.NextEvening)) {
+                    } else if (!desiredList.containsKey(CommuteTimes.NextEvening)) {
                         desiredList.put(CommuteTimes.NextEvening, dataList);
                     }
                     break;
+                case "08":
                 case "07":
                     if (!desiredList.containsKey(CommuteTimes.Morning)) {
                         desiredList.put(CommuteTimes.Morning, dataList);
@@ -152,7 +154,10 @@ public class MainActivity extends Activity  {
 
         for ( CommuteTimes commute : CommuteTimes.values() ) {
             List check = desiredList.get(commute);
-            Log.d(TAG, commute.name() + "  " + DateTimeAndTempUtil.kelvinToFarenheit(check.getMain().getTemp()) + " " + check.getWeather().get(0).getMain() + "  " + DateTimeAndTempUtil.getSecondsPastEpochFormatted(check.getDt()));
+            if (check != null) {
+                Log.d(TAG, commute.name() + "  " + DateTimeAndTempUtil.kelvinToFarenheit(check.getMain().getTemp()) + " " + check.getWeather().get(0).getMain() + "  " + DateTimeAndTempUtil.getSecondsPastEpochFormatted(check.getDt()));
+
+            }
         }
         updateWeather(desiredList);
 
